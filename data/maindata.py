@@ -1,5 +1,7 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Index, inspect
 from sqlalchemy.orm import sessionmaker
+import hashlib
+
 
 class SQLAlchemyManager:
     def __init__(self, db_name: str = 'postgres'):
@@ -55,9 +57,9 @@ class SQLAlchemyManager:
         print("Initializing DB")
         self.create_tables()
         sample_data = [
-            {'login': '12', 'password': 'gh23bd3hXXE', 'name': 'Alan', 'last_name': 'Kross', 'mail': 'alan1@example.com'},
-            {'login': '34', 'password': 'opwk$gye67', 'name': 'Ivan', 'last_name': 'Ivanov', 'mail': 'ivan2@example.com'},
-            {'login': '56', 'password': 'kiowkx882!)wj', 'name': 'Kate', 'last_name': 'Solnceva', 'mail': 'kate3@example.com'}
+            {'login': '12', 'password': hashlib.sha256('gh23bd3hXXE'.encode()).hexdigest(), 'name': 'Alan', 'last_name': 'Kross', 'mail': 'alan1@example.com'},
+            {'login': '34', 'password': hashlib.sha256('opwk$gye67'.encode()).hexdigest(), 'name': 'Ivan', 'last_name': 'Ivanov', 'mail': 'ivan2@example.com'},
+            {'login': '56', 'password': hashlib.sha256('kiowkx882!)wj'.encode()).hexdigest(), 'name': 'Kate', 'last_name': 'Solnceva', 'mail': 'kate3@example.com'}
         ]
         self.insert_data(sample_data, "users")
 
