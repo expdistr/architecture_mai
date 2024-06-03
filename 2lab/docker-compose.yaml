@@ -1,0 +1,47 @@
+
+version: '3.7'
+services:
+  init:
+    container_name: init
+    build:
+      context: ../data
+      dockerfile: Dockerfile
+    networks:
+      - network1234
+    depends_on:
+      postgres:
+        condition: service_healthy
+  
+  users:
+    container_name: users
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - network1234
+
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=lada
+      - POSTGRES_PASSWORD=lada
+      - PGDATA=/data/postgres
+      - POSTGRES_DB=archdb
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "lada" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    networks:
+      - network1234 
+
+networks:
+  network1234:
+    driver: "bridge"
+    external: false
