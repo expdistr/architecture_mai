@@ -102,7 +102,7 @@ services:
       context: ./gateway
       dockerfile: Dockerfile
     ports:
-      - 8000:8000
+      - 8083:8080
     networks:
       - network1234
 

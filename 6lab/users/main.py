@@ -55,6 +55,9 @@ class UserAuth(BaseModel):
     username: str
     password: str
 
+def get_token_from_header(token: str = Depends(oauth2_scheme)):
+    return token
+
 def get_db():
     db = SessionLocal()
     try:
@@ -98,6 +101,10 @@ async def authenticate_user(user: OAuth2PasswordRequestForm = Depends(), db=Depe
     token = jwt.encode({"user_id": db_user.id}, SECRET_KEY, algorithm=ALGORITHM)
     return {"access_token": token, "token_type": "bearer"}
 
+@app.get("/users/get_token")
+async def get_user(token: str = Depends(oauth2_scheme)):
+    return token
+
 class UserCreate(BaseModel):
     login: str
     name: str
@@ -128,7 +135,7 @@ def create_user(user: UserCreate, db=Depends(get_db)):
     return {"id": db_user.id}
 
 @app.put("/users/{user_id}")
-async def update_user(user_id: int, user: UserUpdate, db=Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def update_user(user_id: int, user: UserUpdate, db=Depends(get_db)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -141,7 +148,7 @@ async def update_user(user_id: int, user: UserUpdate, db=Depends(get_db), token:
     return {"message": "User updated successfully"}
 
 @app.get("/users/{user_id}")
-async def get_user(user_id: int, db=Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def get_user(user_id: int, db=Depends(get_db)):
     user = get_user_from_cache(user_id)
     if user:
         return user
@@ -152,7 +159,7 @@ async def get_user(user_id: int, db=Depends(get_db), token: str = Depends(oauth2
     return user
 
 @app.delete("/users/{user_id}")
-async def delete_user(user_id: int, db=Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def delete_user(user_id: int, db=Depends(get_db)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -161,11 +168,11 @@ async def delete_user(user_id: int, db=Depends(get_db), token: str = Depends(oau
     return {"message": "User successfully removed"}
 
 @app.get("/search_by_name")
-async def search_by_name(name: str = Query(None, min_length=1), last_name: str = Query(None, min_length=1), db=Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def search_by_name(name: str = Query(None, min_length=1), last_name: str = Query(None, min_length=1), db=Depends(get_db)):
     results = db.query(User).filter(User.name.ilike(f'{name}%'), User.last_name.ilike(f'{last_name}%')).all()
     return results
 
 @app.get("/search_by_login")
-async def search_by_login(login: str = Query(None, min_length=1), db=Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def search_by_login(login: str = Query(None, min_length=1), db=Depends(get_db)):
     results = db.query(User).filter(User.login.ilike(f'{login}%')).all()
     return results
